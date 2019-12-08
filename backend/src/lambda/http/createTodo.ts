@@ -7,7 +7,7 @@ import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 import * as AWS  from 'aws-sdk'
 //mport { verifyToken } from '../auth/auth0Authorizer'
 //import { PresignedPost } from 'aws-sdk/clients/s3'
-//import { parseUserId } from '../../auth/auth0Authorizer'
+import { parseUserId } from '../../auth/utils'
 import * as uuid from 'uuid'
 //import { Response } from 'aws-sdk'
 
@@ -26,7 +26,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const authorization = event.headers.Authorization
   const split = authorization.split(' ')
   const jwtToken = split[1]
-  const userid = jwtToken.sub
+  const userid = parseUserId(jwtToken)
     //waiting for promise
   //const jwtToken = await verifyToken(authorization)
   //const detailstodo: TodoItem = JSON.parse(event.body)

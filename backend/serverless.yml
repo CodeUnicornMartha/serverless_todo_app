@@ -78,7 +78,7 @@ functions:
           method: post
           path: todos
           cors: true
-          authorizer: Auth
+          #authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Create a new to do
@@ -120,7 +120,7 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
-          authorizer: Auth
+          #authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Delete a to do

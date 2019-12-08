@@ -143,7 +143,7 @@ function getToken(authHeader: string): string {
 
   //cert = cert.match(/.{1,64}/g).join('\n');
 
-  cert = `-----BEGIN CERTIFICATE-----\n${cert}\n-----END CERTIFICATE-----\n`;
+  cert = `-----BEGIN CERTIFICATE-----\n${cert}\n-----END CERTIFICATE-----`;
 
   return cert;
 
