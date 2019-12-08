@@ -68,7 +68,7 @@ export async function verifyToken(authHeader: string): Promise<JwtPayload> {
   logger.info("jwt", jwt)
   const kidheader = jwt.header.kid
   logger.info("kidheader", kidheader)
-  const certificate = getkeys(jwksUrl,kidheader)
+  const certificate = await getkeys(jwksUrl,kidheader)
   logger.info("certificate", certificate)
   
   //const certificate = Axios.get(jwksUrl)
