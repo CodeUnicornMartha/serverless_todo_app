@@ -27,7 +27,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const split = authorization.split(' ')
   const jwtToken = split[1]
   const userid = parseUserId(jwtToken)
-    //waiting for promise
   //const jwtToken = await verifyToken(authorization)
   //const detailstodo: TodoItem = JSON.parse(event.body)
   const todoId = uuid.v4()
@@ -56,10 +55,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         logger.info("CreateItem succeeded:")
       }
    
-    const items = result.Attributes.items
-          // TODO: Remove a TODO item by id
-          // https://stackoverflow.com/questions/7067966/why-doesnt-adding-cors-headers-to-an-options-route-allow-browsers-to-access-my
-          // https://hub.udacity.com/rooms/community:nd9990:840125-project-617?contextType=room
+    //const items = result.Attributes.items
     return {
       statusCode: statusCode,
       headers: {
@@ -67,13 +63,24 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         'Access-Control-Allow-Credentials': true
       },
       body: JSON.stringify({
-        //result
-        //https://hub.udacity.com/rooms/community:nd9990:840125-project-617/community:thread-3193378732-1992673?contextType=room
-        //Response: 
-        items
+
+        item: {
+          todoId: todoId,
+          TableName: ToDoTable,
+          userid: userid,
+          ... newTodoitem
+        }
       })
     }
   }
+
+          //result
+        //https://hub.udacity.com/rooms/community:nd9990:840125-project-617/community:thread-3193378732-1992673?contextType=room
+        //Response: 
+
+  // TODO: Remove a TODO item by id
+          // https://stackoverflow.com/questions/7067966/why-doesnt-adding-cors-headers-to-an-options-route-allow-browsers-to-access-my
+          // https://hub.udacity.com/rooms/community:nd9990:840125-project-617?contextType=room
   
   //const id = uuid.v4()
 
