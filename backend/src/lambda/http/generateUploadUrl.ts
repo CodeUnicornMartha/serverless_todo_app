@@ -2,7 +2,8 @@
 import 'source-map-support/register'
 import * as AWS from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-//import { createLogger } from '../../utils/logger'
+//import { loggers } from 'winston'
+import { createLogger } from '../../utils/logger'
 
 
 const docClient = new AWS.DynamoDB.DocumentClient()
@@ -11,7 +12,7 @@ const s3 = new AWS.S3({ signatureVersion: 'v4'})
 const ToDoTable = process.env.GROUPS_TABLE
 const bucketName = process.env.ToDo_S3_BUCKET
 const urlExpiration = process.env.SIGNED_URL_EXPIRATION
-//const logger = createLogger('generateuploadurl')
+const logger = createLogger('generateuploadurl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
@@ -35,13 +36,19 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   // Upload a file via S3
   const url = getUploadUrl(todoId)
+  const file = uploadFile(todoId, event)
   //const image = s3.putObject(url)
-
+  logger.info("file", file)
   return {
     statusCode: 201,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
+    },
     body: JSON.stringify({
       todoId: todoId,
-      attachmentUrl: url
+      attachmentUrl: url,
+      file: file
     })
   }
 }
@@ -67,30 +74,44 @@ function getUploadUrl(todoId: string) {
   })
 }
 
-/*
-async function createImage(groupId: string, imageId: string, event: any) {
+
+async function uploadFile(todoId: string, event: any) {
   const timestamp = new Date().toISOString()
-  const newImage = JSON.parse(event.body)
+  const newFile = JSON.parse(event.body)
 
   const newItem = {
-    groupId,
-    timestamp,
-    imageId,
-    ...newImage,
-    imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageId}`
+    //groupId,
+    timestamp: timestamp,
+    Key:  {
+      todoId: todoId,
+    },    
+    ...newFile,
+    imageUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
   }
-  console.log('Storing new item: ', newItem)
+  logger.info("newItem", newItem)
+  //console.log('Storing new item: ', newItem)
 
   await docClient
     .put({
-      TableName: imagesTable,
+      TableName: ToDoTable,
       Item: newItem
     })
     .promise()
 
-  return newItem
+  return {
+    statusCode: 201,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
+    },
+    body: JSON.stringify({
+      Item: newItem,
+      TableName: ToDoTable
+    })
+    
+  }
 }
-*/
+
 
 /*
 import 'source-map-support/register'
