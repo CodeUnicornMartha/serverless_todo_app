@@ -4,6 +4,7 @@ import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { createLogger } from '../../utils/logger'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+import { parseUserId } from '../../auth/utils'
 
 
 const docClient = new AWS.DynamoDB.DocumentClient()
@@ -13,20 +14,25 @@ const logger = createLogger('updatetodo')
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const userId = parseUserId(jwtToken)
 
   // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
-  
 
   const result = await docClient.update({
-
-      TableName: ToDoTable,
-      Key: {
-        id: todoId
-      },
-      ExpressionAttributeValues: updatedTodo
-      //export type UpdateExpression = string;
-     
+    TableName: ToDoTable,
+    Key: {
+      todoId: todoId,
+      userId: userId
+    },
+    ConditionExpression:'userId = :userId',
+    ExpressionAttributeValues: {
+      ':userId': userId
+    }     
+      
   }).promise();
   
   var statusCode = 201
@@ -47,7 +53,12 @@ return {
     'Access-Control-Allow-Credentials': true
   },
   body: JSON.stringify({
-    result
+    item: {
+      todoId: todoId,
+      TableName: ToDoTable,
+      userId: userId,
+      ... updatedTodo
+    }
   })
 }
 }

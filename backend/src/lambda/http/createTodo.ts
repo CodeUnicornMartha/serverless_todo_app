@@ -1,5 +1,107 @@
 import 'source-map-support/register'
 
+
+
+import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
+
+import { createLogger } from '../../utils/logger'
+
+import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
+
+//import {TodoItem} from '../../models/TodoItem'
+
+import * as AWS  from 'aws-sdk'
+
+//mport { verifyToken } from '../auth/auth0Authorizer'
+
+//import { PresignedPost } from 'aws-sdk/clients/s3'
+
+import { parseUserId } from '../../auth/utils'
+
+import * as uuid from 'uuid'
+
+//import { Response } from 'aws-sdk'
+
+
+
+
+
+
+
+
+
+const docClient = new AWS.DynamoDB.DocumentClient()
+
+const ToDoTable = process.env.ToDo_TABLE
+
+const logger = createLogger('createtodo')
+
+
+
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+
+  const newTodo: CreateTodoRequest = JSON.parse(event.body)
+  const timestamp = (new Date()).toISOString()
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const userId = parseUserId(jwtToken)
+ 
+  const todoId = uuid.v4()
+  logger.info("key", todoId)
+  //const UserIdINDEX = process.env.UserIdINDEX
+
+  const newTodoitem = {
+    userId: userId,
+    createdAt: timestamp,
+    todoId: todoId,
+    name: newTodo.name,
+    dueDate: newTodo.dueDate
+  }
+  logger.info("newitem", newTodoitem)
+  const result = await docClient.put({
+      TableName: ToDoTable,
+      Item: newTodoitem      
+    }).promise()
+  logger.info("result", result)
+
+    var statusCode = 201
+      if (!result) {
+        logger.error("Unable to create To Do")
+        statusCode = 404
+    } else {
+        logger.info("CreateItem succeeded:")
+      }
+    return {
+      statusCode: statusCode,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify({
+        item: {
+          todoId: todoId,
+          TableName: ToDoTable,
+          userId: userId,
+          ... newTodoitem
+        }
+      })
+
+    }
+
+  }
+
+   //attachmentUrl: detailstodo.attachmentUrl,
+  //const jwtToken = await verifyToken(authorization)
+
+  //const detailstodo: TodoItem = JSON.parse(event.body)
+  
+  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
+  //const userid = event.pathParameters.jwtToken.sub
+
+
+/*import 'source-map-support/register'
+
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { createLogger } from '../../utils/logger'
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
@@ -9,6 +111,7 @@ import * as AWS  from 'aws-sdk'
 //import { PresignedPost } from 'aws-sdk/clients/s3'
 import { parseUserId } from '../../auth/utils'
 import * as uuid from 'uuid'
+
 //import { Response } from 'aws-sdk'
 
 
@@ -20,10 +123,12 @@ const logger = createLogger('createtodo')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
-  const timestamp = (new Date()).toISOString()
+  const createdAt = (new Date()).toISOString()
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
   //const userid = event.pathParameters.jwtToken.sub
   const authorization = event.headers.Authorization
+  //const done = event.pathParameters.done
+  //const attachmentUrl = event.pathParameters.attachmentUrl
   const split = authorization.split(' ')
   const jwtToken = split[1]
   const userid = parseUserId(jwtToken)
@@ -33,12 +138,14 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   logger.info("key", todoId)
 
   const newTodoitem = {
-    userid: userid,
-    //done: detailstodo.done,
-    createdAt: timestamp,
+    Key: {    
     todoId: todoId,
+    userid: userid
+    },
+    createdAt: createdAt,
+    //done: done,
     name: newTodo.name,
-    //attachmentUrl: detailstodo.attachmentUrl,
+    //attachmentUrl: attachmentUrl,
     dueDate: newTodo.dueDate
   }
   logger.info("newitem", newTodoitem)
@@ -63,16 +170,25 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         'Access-Control-Allow-Credentials': true
       },
       body: JSON.stringify({
+        Item: newTodoitem,
+        TableName: ToDoTable,
+        ... newTodoitem
+        /*item: {
 
-        item: {
           todoId: todoId,
+
           TableName: ToDoTable,
+
           userid: userid,
+
           ... newTodoitem
+
         }
+        
       })
     }
   }
+  */
 
           //result
         //https://hub.udacity.com/rooms/community:nd9990:840125-project-617/community:thread-3193378732-1992673?contextType=room

@@ -4,35 +4,66 @@ import { TableName } from 'aws-sdk/clients/dynamodb'
 //import { verifyToken } from '../auth/auth0Authorizer'
 import { createLogger } from '../../utils/logger'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import { parseUserId } from '../../auth/utils'
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const logger = createLogger('gettodo')
 const ToDoTable: TableName = process.env.ToDo_TABLE
-//const ToDoIdIndex = process.env.ToDo_ID_INDEX
+const UserIdINDEX = process.env.UserIdINDEX
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // TODO: Get all TODO items for a current user
+  logger.info('Processing event: ', event)
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const userId = parseUserId(jwtToken)
+
+  const result = await docClient.query({
+    TableName: ToDoTable,
+    IndexName: UserIdINDEX,
+    KeyConditionExpression: 'userId = :userId',
+    ExpressionAttributeValues: {
+      ':userId': userId
+      //RangeKey: createdAt
+    }
+  }).promise()
+  logger.info("result", result)
+    
+  var statusCode = 201
+  if (!result) {
+    logger.error("Unable to get ToDos")
+    statusCode = 404
+  } 
+  else {
+    logger.info("GetToDos succeeded:")
+    }
+  const items = result.Items
+  logger.info("items",items)
+  return {
+    statusCode: statusCode,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
+    },
+    body: JSON.stringify({
+      items
+    })
+  }
+}
+
+  /*item: {
+        TableName: ToDoTable,
+        userid: userid
+        //IndexName: ToDoIdIndex
+      }
+      */
+ // TODO: Get all TODO items for a current user
    // TODO: Get all TODO items for a current user
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
   //const todoId = event.pathParameters.todoId
   //const createdAt = event.pathParameters.createdAt
-
-  logger.info('Processing event: ', event)
-  //const authorization = event.headers.Authorization
-  //const split = authorization.split(' ')
-  //const jwtToken = split[1]
-
- /* const result = await docClient.query({
-    TableName: ToDoTable,
-    IndexName: ToDoIdIndex,
-    KeyConditionExpression: 'paritionKey = :ToDoId',
-    ExpressionAttributeValues: {
-      ':paritionKey': todoId
-      //RangeKey: createdAt
-    }
-  }).promise()
-  */
-  //const todoId = JSON.parse(event.body).id
+  //UserIdIndex
+//const todoId = JSON.parse(event.body).id
   //const allitems = {
   //https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
   /*
@@ -48,35 +79,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const result = await docClient.query(params).promise()
     logger.info("result", result) 
     */
+    /*
     const result = await docClient.scan({
     TableName: ToDoTable
     }).promise()
-    
-   
-  
-  
-    
-  var statusCode = 201
-  if (!result) {
-    logger.error("Unable to get ToDos")
-    statusCode = 404
-  } 
-  else {
-    logger.info("GetToDos succeeded:")
-    }
-  const items = result.Items
-  return {
-    statusCode: statusCode,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true
-    },
-    body: JSON.stringify({
-      //items
-      items
-    })
-  }
-}
+    */
 //const items = result.Items
   //logger.info("items",items)
 

@@ -4,22 +4,27 @@ import * as AWS from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 //import { loggers } from 'winston'
 import { createLogger } from '../../utils/logger'
-
+import { parseUserId } from '../../auth/utils'
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const s3 = new AWS.S3({ signatureVersion: 'v4'})
 
-const ToDoTable = process.env.GROUPS_TABLE
+const ToDoTable = process.env.ToDo_TABLE
 const bucketName = process.env.ToDo_S3_BUCKET
 const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 const logger = createLogger('generateuploadurl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
+  //const createdAt = event.pathParameters.createdAt
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const userId = parseUserId(jwtToken)
 
   // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
-
-  const validToDoId = await ToDoExists(todoId)
+  const validToDoId = await ToDoExists(todoId, userId)
+  logger.info("validtodoid", validToDoId)
 
   if (!validToDoId) {
     return {
@@ -29,14 +34,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       })
     }
   }
-
-  //Business Logic - Permission to access data authentication - BUsiness Logic - Controller
-  // Data Layer - Dynamo DB - Models
-  // http - View
-
-  // Upload a file via S3
   const url = getUploadUrl(todoId)
-  const file = uploadFile(todoId, event)
+  logger.info("url", url)
+  const file = await uploadFile(todoId, userId, event)
   //const image = s3.putObject(url)
   logger.info("file", file)
   return {
@@ -47,50 +47,47 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     },
     body: JSON.stringify({
       todoId: todoId,
+      TableName: ToDoTable,
+      //createdAt: createdAt,
+      userId: userId,
       attachmentUrl: url,
-      file: file
+      ... file
     })
   }
 }
 
-async function ToDoExists(todoId: string) {
+async function ToDoExists(todoId: string, userId: string) {
   const result = await docClient.get({
       TableName: ToDoTable,
       Key: {
-        todoId: todoId
+        todoId: todoId,
+        //createdAt: createdAt,
+        userId: userId
       }
     }).promise()
 
-  console.log('Get ToDo: ', result)
+  logger.info('Get ToDo: ', result)
   return !!result.Item
 }
 
 function getUploadUrl(todoId: string) {
   return s3.getSignedUrl('putObject', {
     Bucket: bucketName,
-    TableName: ToDoTable,
     Key: todoId,
     Expires: urlExpiration
   })
 }
-
-
-async function uploadFile(todoId: string, event: any) {
-  const timestamp = new Date().toISOString()
+async function uploadFile(todoId: string, userId: string, event: any) {
   const newFile = JSON.parse(event.body)
 
-  const newItem = {
-    //groupId,
-    timestamp: timestamp,
-    Key:  {
-      todoId: todoId,
-    },    
-    ...newFile,
-    imageUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
+  const newItem = { 
+    todoId: todoId,
+      //createdAt: createdAt,
+    userId: userId,
+    ... newFile,
+    attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
   }
   logger.info("newItem", newItem)
-  //console.log('Storing new item: ', newItem)
-
   await docClient
     .put({
       TableName: ToDoTable,
@@ -106,13 +103,18 @@ async function uploadFile(todoId: string, event: any) {
     },
     body: JSON.stringify({
       Item: newItem,
-      TableName: ToDoTable
+      TableName: ToDoTable,
+      ... newItem
     })
-    
   }
 }
 
+  //console.log('Storing new item: ', newItem)
+  //Business Logic - Permission to access data authentication - BUsiness Logic - Controller
+  // Data Layer - Dynamo DB - Models
+  // http - View
 
+  // Upload a file via S3
 /*
 import 'source-map-support/register'
 
