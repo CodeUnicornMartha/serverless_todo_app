@@ -60,3 +60,30 @@ export async function gettodos(userId: string){
     return resultgetdata
 }
 
+export async function ToDoExists(todoId: string, userId: string) {
+    const ToDoTable = process.env.ToDo_TABLE
+    const docClient = new AWS.DynamoDB.DocumentClient()
+    const result = await docClient.get({
+        TableName: ToDoTable,
+        Key: {
+          todoId: todoId,
+          //createdAt: createdAt,
+          userId: userId
+        }
+      }).promise()
+  
+    logger.info('Get ToDo: ', result)
+    return !!result.Item
+  }
+  
+ export function getUploadUrl(todoId: string) {
+    const s3 = new AWS.S3({ signatureVersion: 'v4'})
+    const bucketName = process.env.ToDo_S3_BUCKET
+    const urlExpiration = process.env.SIGNED_URL_EXPIRATION
+    return s3.getSignedUrl('putObject', {
+      Bucket: bucketName,
+      Key: todoId,
+      Expires: urlExpiration
+    })
+  }
+  

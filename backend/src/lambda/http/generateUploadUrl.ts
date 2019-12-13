@@ -1,19 +1,20 @@
 
 import 'source-map-support/register'
-import * as AWS from 'aws-sdk'
+//import * as AWS from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 //import { loggers } from 'winston'
 import { createLogger } from '../../utils/logger'
 //import { parseUserId } from '../../auth/utils'
 //import * as uuid from 'uuid'
 import { getuserId } from '../../BusinessLogic/userauthentication'
+import { ToDoExists, getUploadUrl } from '../../DataLayer/ToDoAccess'
 
-const docClient = new AWS.DynamoDB.DocumentClient()
-const s3 = new AWS.S3({ signatureVersion: 'v4'})
+//const docClient = new AWS.DynamoDB.DocumentClient()
+//const s3 = new AWS.S3({ signatureVersion: 'v4'})
 
-const ToDoTable = process.env.ToDo_TABLE
-const bucketName = process.env.ToDo_S3_BUCKET
-const urlExpiration = process.env.SIGNED_URL_EXPIRATION
+//const ToDoTable = process.env.ToDo_TABLE
+//const bucketName = process.env.ToDo_S3_BUCKET
+//const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 const logger = createLogger('generateuploadurl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -50,27 +51,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   }
 }
 
-async function ToDoExists(todoId: string, userId: string) {
-  const result = await docClient.get({
-      TableName: ToDoTable,
-      Key: {
-        todoId: todoId,
-        //createdAt: createdAt,
-        userId: userId
-      }
-    }).promise()
-
-  logger.info('Get ToDo: ', result)
-  return !!result.Item
-}
-
-function getUploadUrl(todoId: string) {
-  return s3.getSignedUrl('putObject', {
-    Bucket: bucketName,
-    Key: todoId,
-    Expires: urlExpiration
-  })
-}
 
   //const uploadUrl = await uploadFile(todoId, userId, fileid)
   //logger.info("attachmentUrl", uploadUrl)
