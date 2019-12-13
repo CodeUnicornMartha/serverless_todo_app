@@ -18,9 +18,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const split = authorization.split(' ')
   const jwtToken = split[1]
   const userId = parseUserId(jwtToken)
-
-  // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
-  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
+  const todoname = updatedTodo.name
+  const done = updatedTodo.done
+  const dueDate = updatedTodo.dueDate
 
   const result = await docClient.update({
     TableName: ToDoTable,
@@ -28,12 +28,18 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       todoId: todoId,
       userId: userId
     },
-    ConditionExpression:'userId = :userId',
+    UpdateExpression: 'set todoname = :todoname, done = :done, dueDate = :dueDate',
     ExpressionAttributeValues: {
-      ':userId': userId
-    }     
+      ':todoname': todoname,
+      ':done': done,
+      ':dueDate': dueDate
+
+    },
+    ReturnValues: "UPDATED_NEW"     
       
   }).promise();
+
+  logger.info("result", result)
   
   var statusCode = 201
   if (!result) {
@@ -43,9 +49,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     logger.info("UpdateToDo succeeded:")
 
   }
-      // TODO: Remove a TODO item by id
-      // https://stackoverflow.com/questions/7067966/why-doesnt-adding-cors-headers-to-an-options-route-allow-browsers-to-access-my
-      // https://hub.udacity.com/rooms/community:nd9990:840125-project-617?contextType=room
+      
 return {
   statusCode: statusCode,
   headers: {
@@ -53,16 +57,24 @@ return {
     'Access-Control-Allow-Credentials': true
   },
   body: JSON.stringify({
-    item: {
+    result
+    /*item: {
       todoId: todoId,
       TableName: ToDoTable,
       userId: userId,
       ... updatedTodo
     }
+    */
   })
 }
 }
 
+// TODO: Remove a TODO item by id
+      // https://stackoverflow.com/questions/7067966/why-doesnt-adding-cors-headers-to-an-options-route-allow-browsers-to-access-my
+      // https://hub.udacity.com/rooms/community:nd9990:840125-project-617?contextType=room
+
+  // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
+  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
 
 /*
 

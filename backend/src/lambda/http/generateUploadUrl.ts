@@ -5,6 +5,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 //import { loggers } from 'winston'
 import { createLogger } from '../../utils/logger'
 import { parseUserId } from '../../auth/utils'
+//import * as uuid from 'uuid'
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const s3 = new AWS.S3({ signatureVersion: 'v4'})
@@ -16,7 +17,6 @@ const logger = createLogger('generateuploadurl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
-  //const createdAt = event.pathParameters.createdAt
   const authorization = event.headers.Authorization
   const split = authorization.split(' ')
   const jwtToken = split[1]
@@ -34,11 +34,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       })
     }
   }
-  const url = getUploadUrl(todoId)
-  logger.info("url", url)
-  const file = await uploadFile(todoId, userId, event)
-  //const image = s3.putObject(url)
-  logger.info("file", file)
+  const uploadUrl = getUploadUrl(todoId)
+  logger.info("url", uploadUrl)
   return {
     statusCode: 201,
     headers: {
@@ -46,12 +43,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      todoId: todoId,
-      TableName: ToDoTable,
-      //createdAt: createdAt,
-      userId: userId,
-      attachmentUrl: url,
-      ... file
+      uploadUrl: uploadUrl
     })
   }
 }
@@ -77,23 +69,60 @@ function getUploadUrl(todoId: string) {
     Expires: urlExpiration
   })
 }
-async function uploadFile(todoId: string, userId: string, event: any) {
-  const newFile = JSON.parse(event.body)
 
+  //const uploadUrl = await uploadFile(todoId, userId, fileid)
+  //logger.info("attachmentUrl", uploadUrl)
+  //const image = s3.putObject(url)
+  //logger.info("file", file)
+
+//https://winterwindsoftware.com/serverless-photo-upload-api/
+  //const fileid = uuid.v4()
+  //JSON.parse(event.body || '{}')
+  //
+  //const createdAt = event.pathParameters.createdAt
+/*
+async function uploadFile(todoId: string, userId: string, fileid: string) {
+ // const newFile = JSON.parse(event.body)
+  let uploadUrl = `https://${bucketName}.s3.amazonaws.com/${fileid}`
   const newItem = { 
     todoId: todoId,
       //createdAt: createdAt,
     userId: userId,
-    ... newFile,
-    attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
+   // ... newFile,
+   uploadUrl: uploadUrl
   }
   logger.info("newItem", newItem)
-  await docClient
-    .put({
-      TableName: ToDoTable,
-      Item: newItem
-    })
-    .promise()
+  const result = await docClient.update({
+                  TableName: ToDoTable,
+                  Key: {
+                    todoId: todoId,
+                    userId: userId
+                  },
+                  UpdateExpression: 'set uploadUrl = :uploadUrl',
+                  ExpressionAttributeValues: {
+                  ':uploadUrl': uploadUrl
+                  //RangeKey: createdAt
+                },
+                ReturnValues: "UPDATED_NEW"
+                })
+                .promise()
+  /*
+  const result = await docClient.update({
+                  TableName: ToDoTable,
+                  Key: {
+                    todoId: todoId,
+                    userId: userId
+                  },
+                  UpdateExpression: 'set uploadUrl = :uploadUrl',
+                  ExpressionAttributeValues: {
+                  ':uploadUrl': uploadUrl
+                  //RangeKey: createdAt
+                },
+                ReturnValues: "UPDATED_NEW"
+                })
+                .promise()
+    
+  logger.info("result", result)
 
   return {
     statusCode: 201,
@@ -102,12 +131,24 @@ async function uploadFile(todoId: string, userId: string, event: any) {
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      Item: newItem,
-      TableName: ToDoTable,
-      ... newItem
+      uploadUrl: uploadUrl
     })
   }
 }
+*/
+
+
+
+    //Item: newItem,
+      //TableName: ToDoTable,
+      //   ... newItem
+    
+      //todoId: todoId,
+      //TableName: ToDoTable,
+      //createdAt: createdAt,
+      //userId: userId,
+      //attachmentUrl: url
+      //... file
 
   //console.log('Storing new item: ', newItem)
   //Business Logic - Permission to access data authentication - BUsiness Logic - Controller
