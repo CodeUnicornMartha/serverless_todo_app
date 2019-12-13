@@ -37,3 +37,4 @@ return {
   // https://stackoverflow.com/questions/7067966/why-doesnt-adding-cors-headers-to-an-options-route-allow-browsers-to-access-my
   // https://hub.udacity.com/rooms/community:nd9990:840125-project-617?contextType=room
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
+  // https://github.com/BaineGames/udacity-nd9990-p5/tree/master/backend/src/lambda/http

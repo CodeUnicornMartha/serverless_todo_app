@@ -114,4 +114,6 @@ async function getkeys(jwksUrl: string, kidheader: string){
 //https://github.com/auth0/node-jwks-rsa/blob/master/src/JwksClient.js
 // https://github.com/sgmeyer/auth0-node-jwks-rs256/blob/master/src/lib/utils.js
 // https://auth0.com/blog/navigating-rs256-and-jwks/
-//https://github.com/auth0/node-jsonwebtoken
+// https://github.com/auth0/node-jsonwebtoken
+ // https://hub.udacity.com/rooms/community:nd9990:840125-project-617/community:thread-4601288877-1137793?contextType=room
+ // http://zetcode.com/javascript/axios/
