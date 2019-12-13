@@ -2,12 +2,12 @@ import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { createLogger } from '../utils/logger'
 import * as AWS  from 'aws-sdk'
 
+const logger = createLogger('DataLayer')
 
 export async function createtodo(userId: string, todo: CreateTodoRequest, todoId: string) {
     const docClient = new AWS.DynamoDB.DocumentClient
     const timestamp = (new Date()).toISOString()
     const ToDoTable = process.env.ToDo_TABLE
-    const logger = createLogger('createtodoDataLayer')
     const newTodoitem = {
         userId: userId,
         createdAt: timestamp,
@@ -15,10 +15,29 @@ export async function createtodo(userId: string, todo: CreateTodoRequest, todoId
         name: todo.name,
         dueDate: todo.dueDate
       }
-    const result = await docClient.put({
+      logger.info("newTodoitem", newTodoitem)
+    const resultcreatedata = await docClient.put({
         TableName: ToDoTable,
         Item: newTodoitem      
       }).promise()
-    logger.info("result", result)
+    logger.info("resultcreate", resultcreatedata)
     return newTodoitem
+}
+
+export async function deletetodo(userId: string, todoId: string) {
+    const docClient = new AWS.DynamoDB.DocumentClient
+    const ToDoTable = process.env.ToDo_TABLE
+    const Key = {
+        todoId: todoId,
+        //createdAt: createdAt,
+        userId: userId
+        }
+    logger.info("Key", Key)
+    const resultdeletedata = await docClient.delete({
+        TableName: ToDoTable,
+        Key: Key
+      }).promise()
+      logger.info("resultdelete", resultdeletedata)
+
+      return resultdeletedata
 }

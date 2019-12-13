@@ -1,15 +1,16 @@
 import 'source-map-support/register'
-import * as AWS  from 'aws-sdk'
+//import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 //import { verifyToken } from '../auth/auth0Authorizer'
 //import { promises } from 'fs'
 import { createLogger } from '../../utils/logger'
 //import { parseUserId } from '../../auth/utils'
 import { getuserId } from '../../BusinessLogic/userauthentication'
+import { deletetodo } from '../../DataLayer/ToDoAccess'
 
 
-const docClient = new AWS.DynamoDB.DocumentClient()
-const ToDoTable = process.env.ToDo_TABLE
+//const docClient = new AWS.DynamoDB.DocumentClient()
+//const ToDoTable = process.env.ToDo_TABLE
 const logger = createLogger('deleteToDo')
 
 
@@ -27,20 +28,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoId = event.pathParameters.todoId
   logger.info("todoid", todoId)
  
-  const Key = {
-    todoId: todoId,
-    //createdAt: createdAt,
-    userId: userId
-    }
-  logger.info("Key", Key)
-
-  const result = await docClient.delete({
-    TableName: ToDoTable,
-    Key: Key
-  }).promise()
-  logger.info("result", result)
+  
+  const resultdelete = await deletetodo(userId, todoId)
+  logger.info("resultdeletehttp", resultdelete)
   var statusCode = 200
-  if (!result) {
+  if (!resultdelete) {
     logger.error("Unable to delete To Do")
     statusCode = 404
   } 
