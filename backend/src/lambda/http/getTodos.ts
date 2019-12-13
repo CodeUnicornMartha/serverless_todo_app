@@ -1,16 +1,17 @@
 import 'source-map-support/register'
-import * as AWS  from 'aws-sdk'
-import { TableName } from 'aws-sdk/clients/dynamodb'
+//import * as AWS  from 'aws-sdk'
+//import { TableName } from 'aws-sdk/clients/dynamodb'
 //import { verifyToken } from '../auth/auth0Authorizer'
 import { createLogger } from '../../utils/logger'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 //import { parseUserId } from '../../auth/utils'
 import { getuserId } from '../../BusinessLogic/userauthentication'
+import { gettodos } from '../../DataLayer/ToDoAccess'
 
-const docClient = new AWS.DynamoDB.DocumentClient()
+//const docClient = new AWS.DynamoDB.DocumentClient()
 const logger = createLogger('gettodo')
-const ToDoTable: TableName = process.env.ToDo_TABLE
-const UserIdINDEX = process.env.UserIdINDEX
+//const ToDoTable: TableName = process.env.ToDo_TABLE
+//const UserIdINDEX = process.env.UserIdINDEX
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.info('Processing event: ', event)
@@ -20,26 +21,17 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   //const userId = parseUserId(jwtToken)
   const userId = getuserId(event)
 
-  const result = await docClient.query({
-    TableName: ToDoTable,
-    IndexName: UserIdINDEX,
-    KeyConditionExpression: 'userId = :userId',
-    ExpressionAttributeValues: {
-      ':userId': userId
-      //RangeKey: createdAt
-    }
-  }).promise()
-  logger.info("result", result)
+  const resultget = await gettodos(userId)
     
   var statusCode = 201
-  if (!result) {
+  if (!resultget) {
     logger.error("Unable to get ToDos")
     statusCode = 404
   } 
   else {
     logger.info("GetToDos succeeded:")
     }
-  const items = result.Items
+  const items = resultget.Items
   logger.info("items",items)
   return {
     statusCode: statusCode,

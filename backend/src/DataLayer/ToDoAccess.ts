@@ -41,3 +41,22 @@ export async function deletetodo(userId: string, todoId: string) {
 
       return resultdeletedata
 }
+
+export async function gettodos(userId: string){
+    const docClient = new AWS.DynamoDB.DocumentClient
+    const ToDoTable = process.env.ToDo_TABLE
+    const UserIdINDEX = process.env.UserIdINDEX
+    const resultgetdata = await docClient.query({
+        TableName: ToDoTable,
+        IndexName: UserIdINDEX,
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': userId
+          //RangeKey: createdAt
+        }
+      }).promise()
+      logger.info("result", resultgetdata)
+    
+    return resultgetdata
+}
+
