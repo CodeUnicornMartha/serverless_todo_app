@@ -1,40 +1,29 @@
 import 'source-map-support/register'
-
-
-
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
-
 import { createLogger } from '../../utils/logger'
-
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
-
-//import {TodoItem} from '../../models/TodoItem'
-
-//import * as AWS  from 'aws-sdk'
-
 import { getuserId } from '../../BusinessLogic/userauthentication'
 import * as uuid from 'uuid'
 import { createtodo } from '../../DataLayer/ToDoAccess'
+
 const logger = createLogger('createtodo')
-
-
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
   const ToDoTable = process.env.ToDo_TABLE
   const userId = getuserId(event)
- 
   const todoId = uuid.v4()
   logger.info("key", todoId)
   const newTodoitem = await createtodo(userId, newTodo, todoId)
-    var statusCode = 201
+  let statusCode = 201
       if (!newTodoitem) {
         logger.error("Unable to create To Do")
         statusCode = 404
     } else {
         logger.info("CreateItem succeeded:")
       }
+  logger.info("newTodoitem", newTodoitem)
     return {
       statusCode: statusCode,
       headers: {

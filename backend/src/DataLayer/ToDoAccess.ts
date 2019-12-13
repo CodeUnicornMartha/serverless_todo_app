@@ -1,6 +1,7 @@
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { createLogger } from '../utils/logger'
 import * as AWS  from 'aws-sdk'
+import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 
 const logger = createLogger('DataLayer')
 
@@ -86,4 +87,51 @@ export async function ToDoExists(todoId: string, userId: string) {
       Expires: urlExpiration
     })
   }
+export async function updateuploadurl(todoId: string, userId: string, uploadUrl: string){
+    const ToDoTable = process.env.ToDo_TABLE
+    const docClient = new AWS.DynamoDB.DocumentClient()
+    const resultuploadurldb = await docClient.update({
+        TableName: ToDoTable,
+        Key: {
+          todoId: todoId,
+          userId: userId
+        },
+        UpdateExpression: 'set uploadUrl = :uploadUrl',
+        ExpressionAttributeValues: {
+        ':uploadUrl': uploadUrl
+      },
+      ReturnValues: "UPDATED_NEW"
+      })
+      .promise()
+    logger.info("resultuploadurldb", resultuploadurldb)
+    return resultuploadurldb
+}
+export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string, userId: string){
+  const ToDoTable = process.env.ToDo_TABLE
+  const docClient = new AWS.DynamoDB.DocumentClient()
+  const todoname = updatedTodo.name
+  const done = updatedTodo.done
+  const dueDate = updatedTodo.dueDate
+
+  const resultupdatedata = await docClient.update({
+    TableName: ToDoTable,
+    Key: {
+      todoId: todoId,
+      userId: userId
+    },
+    UpdateExpression: 'set todoname = :todoname, done = :done, dueDate = :dueDate',
+    ExpressionAttributeValues: {
+      ':todoname': todoname,
+      ':done': done,
+      ':dueDate': dueDate
+
+    },
+    ReturnValues: "UPDATED_NEW"     
+      
+  }).promise();
+
+  logger.info("result", resultupdatedata)
+
+  return resultupdatedata
   
+}

@@ -20,30 +20,6 @@ provider:
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - codedeploy:*
-      Resource:
-        - '*'
-    - Effect: Allow
-      Action:
-        - dynamodb:Scan
-        - dynamodb:PutItem
-        - dynamodb:GetItem
-        - dynamodb:Query
-        - dynamodb:DeleteItem
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-        - s3:GetObject
-      Resource: arn:aws:s3:::${self:provider.environment.ToDo_S3_BUCKET}/*
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}/index/${self:provider.environment.UserIdINDEX}
-
 
 functions:
 
@@ -61,6 +37,11 @@ functions:
           cors: true
           authorizer: Auth
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - codedeploy:*
+        Resource:
+          - '*'
       - Effect: Allow
         Action:
           - dynamodb:Query
@@ -91,6 +72,11 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - codedeploy:*
+        Resource:
+          - '*'
+      - Effect: Allow
+        Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
 
@@ -110,6 +96,11 @@ functions:
             requestModels:
               'application/json': TodoUpdate
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - codedeploy:*
+        Resource:
+          - '*'
       - Effect: Allow
         Action:
           - dynamodb:PutItem
@@ -132,6 +123,11 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - codedeploy:*
+        Resource:
+          - '*'
+      - Effect: Allow
+        Action:
           - dynamodb:DeleteItem
           - dynamodb:Delete
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
@@ -150,6 +146,11 @@ functions:
             summary: Generate an Upload Url
             description: Generate an Upload Url
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - codedeploy:*
+        Resource:
+          - '*'
       - Effect: Allow
         Action:
           - s3:PutObject

@@ -1,15 +1,15 @@
-
 import 'source-map-support/register'
-import * as AWS  from 'aws-sdk'
+//import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { createLogger } from '../../utils/logger'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
 //import { parseUserId } from '../../auth/utils'
 import { getuserId } from '../../BusinessLogic/userauthentication'
+import { updatetodo } from '../../DataLayer/ToDoAccess'
 
 
-const docClient = new AWS.DynamoDB.DocumentClient()
-const ToDoTable = process.env.ToDo_TABLE
+//const docClient = new AWS.DynamoDB.DocumentClient()
+//const ToDoTable = process.env.ToDo_TABLE
 const logger = createLogger('updatetodo')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -20,31 +20,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   //const jwtToken = split[1]
   //const userId = parseUserId(jwtToken)
   const userId = getuserId(event)
-  const todoname = updatedTodo.name
-  const done = updatedTodo.done
-  const dueDate = updatedTodo.dueDate
+ 
 
-  const result = await docClient.update({
-    TableName: ToDoTable,
-    Key: {
-      todoId: todoId,
-      userId: userId
-    },
-    UpdateExpression: 'set todoname = :todoname, done = :done, dueDate = :dueDate',
-    ExpressionAttributeValues: {
-      ':todoname': todoname,
-      ':done': done,
-      ':dueDate': dueDate
-
-    },
-    ReturnValues: "UPDATED_NEW"     
-      
-  }).promise();
-
-  logger.info("result", result)
+  const resultupdate = await updatetodo(updatedTodo, todoId, userId)
   
   var statusCode = 201
-  if (!result) {
+  if (!resultupdate) {
     logger.error("Unable to update ToDos")
     statusCode = 404
 } else {
@@ -59,7 +40,7 @@ return {
     'Access-Control-Allow-Credentials': true
   },
   body: JSON.stringify({
-    result
+    resultupdate
     /*item: {
       todoId: todoId,
       TableName: ToDoTable,
