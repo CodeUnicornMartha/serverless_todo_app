@@ -10,17 +10,19 @@ import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 
 //import {TodoItem} from '../../models/TodoItem'
 
-import * as AWS  from 'aws-sdk'
+//import * as AWS  from 'aws-sdk'
 
 //mport { verifyToken } from '../auth/auth0Authorizer'
 
 //import { PresignedPost } from 'aws-sdk/clients/s3'
 
-import { parseUserId } from '../../auth/utils'
+//import { parseUserId } from '../../auth/utils'
+import { getuserId } from '../../BusinessLogic/userauthentication'
 
 import * as uuid from 'uuid'
 
 //import { Response } from 'aws-sdk'
+import { createtodo } from '../../DataLayer/ToDoAccess'
 
 
 
@@ -30,9 +32,9 @@ import * as uuid from 'uuid'
 
 
 
-const docClient = new AWS.DynamoDB.DocumentClient()
+//const docClient = new AWS.DynamoDB.DocumentClient()
 
-const ToDoTable = process.env.ToDo_TABLE
+//const ToDoTable = process.env.ToDo_TABLE
 
 const logger = createLogger('createtodo')
 
@@ -41,32 +43,38 @@ const logger = createLogger('createtodo')
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
-  const timestamp = (new Date()).toISOString()
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-  const userId = parseUserId(jwtToken)
+  const ToDoTable = process.env.ToDo_TABLE
+  
+  //const authorization = event.headers.Authorization
+  //const split = authorization.split(' ')
+  //const jwtToken = split[1]
+  //const userId = parseUserId(jwtToken)
+  const userId = getuserId(event)
  
   const todoId = uuid.v4()
   logger.info("key", todoId)
   //const UserIdINDEX = process.env.UserIdINDEX
-
-  const newTodoitem = {
+  /*const newTodoitem = {
     userId: userId,
     createdAt: timestamp,
     todoId: todoId,
     name: newTodo.name,
     dueDate: newTodo.dueDate
   }
+  */
+  const newTodoitem = await createtodo(userId, newTodo, todoId)
+  
+  /*
+  
   logger.info("newitem", newTodoitem)
   const result = await docClient.put({
       TableName: ToDoTable,
       Item: newTodoitem      
     }).promise()
   logger.info("result", result)
-
+    */
     var statusCode = 201
-      if (!result) {
+      if (!newTodoitem) {
         logger.error("Unable to create To Do")
         statusCode = 404
     } else {

@@ -4,7 +4,8 @@ import { TableName } from 'aws-sdk/clients/dynamodb'
 //import { verifyToken } from '../auth/auth0Authorizer'
 import { createLogger } from '../../utils/logger'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import { parseUserId } from '../../auth/utils'
+//import { parseUserId } from '../../auth/utils'
+import { getuserId } from '../../BusinessLogic/userauthentication'
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const logger = createLogger('gettodo')
@@ -13,10 +14,11 @@ const UserIdINDEX = process.env.UserIdINDEX
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.info('Processing event: ', event)
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-  const userId = parseUserId(jwtToken)
+  //const authorization = event.headers.Authorization
+  //const split = authorization.split(' ')
+  //const jwtToken = split[1]
+  //const userId = parseUserId(jwtToken)
+  const userId = getuserId(event)
 
   const result = await docClient.query({
     TableName: ToDoTable,

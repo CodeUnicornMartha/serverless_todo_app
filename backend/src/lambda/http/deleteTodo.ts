@@ -4,7 +4,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 //import { verifyToken } from '../auth/auth0Authorizer'
 //import { promises } from 'fs'
 import { createLogger } from '../../utils/logger'
-import { parseUserId } from '../../auth/utils'
+//import { parseUserId } from '../../auth/utils'
+import { getuserId } from '../../BusinessLogic/userauthentication'
 
 
 const docClient = new AWS.DynamoDB.DocumentClient()
@@ -14,10 +15,11 @@ const logger = createLogger('deleteToDo')
 
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-  const userId = parseUserId(jwtToken)
+  //const authorization = event.headers.Authorization
+  //const split = authorization.split(' ')
+  //const jwtToken = split[1]
+  //const userId = parseUserId(jwtToken)
+  const userId = getuserId(event)
   //const userid = event.pathParameters.userId
   //const createdAt = event.pathParameters.createdAt
   logger.info("userid", userId)

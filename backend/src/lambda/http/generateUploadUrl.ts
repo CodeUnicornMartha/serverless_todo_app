@@ -4,8 +4,9 @@ import * as AWS from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 //import { loggers } from 'winston'
 import { createLogger } from '../../utils/logger'
-import { parseUserId } from '../../auth/utils'
+//import { parseUserId } from '../../auth/utils'
 //import * as uuid from 'uuid'
+import { getuserId } from '../../BusinessLogic/userauthentication'
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const s3 = new AWS.S3({ signatureVersion: 'v4'})
@@ -17,10 +18,11 @@ const logger = createLogger('generateuploadurl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-  const userId = parseUserId(jwtToken)
+  //const authorization = event.headers.Authorization
+  //const split = authorization.split(' ')
+  //const jwtToken = split[1]
+  //const userId = parseUserId(jwtToken)
+  const userId = getuserId(event)
 
   // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
   const validToDoId = await ToDoExists(todoId, userId)

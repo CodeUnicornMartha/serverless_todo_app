@@ -4,7 +4,8 @@ import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { createLogger } from '../../utils/logger'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
-import { parseUserId } from '../../auth/utils'
+//import { parseUserId } from '../../auth/utils'
+import { getuserId } from '../../BusinessLogic/userauthentication'
 
 
 const docClient = new AWS.DynamoDB.DocumentClient()
@@ -14,10 +15,11 @@ const logger = createLogger('updatetodo')
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-  const userId = parseUserId(jwtToken)
+  //const authorization = event.headers.Authorization
+  //const split = authorization.split(' ')
+  //const jwtToken = split[1]
+  //const userId = parseUserId(jwtToken)
+  const userId = getuserId(event)
   const todoname = updatedTodo.name
   const done = updatedTodo.done
   const dueDate = updatedTodo.dueDate
