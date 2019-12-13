@@ -14,7 +14,7 @@ const logger = createLogger('auth')
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
-const jwksUrl = ''
+const jwksUrl = 'https://dev-so9n1gu3.auth0.com/.well-known/jwks.json'
 
 export const handler = async (event: CustomAuthorizerEvent): Promise<CustomAuthorizerResult> => {
   logger.info('Authorizing a user', event.authorizationToken)
@@ -111,9 +111,9 @@ async function getkeys(jwksUrl: string, kidheader: string){
 // https://auth0.com/blog/navigating-rs256-and-jwks/
 // https://auth0.com/blog/navigating-rs256-and-jwks/
 // https://github.com/auth0/node-jwks-rsa/blob/master/src/utils.js#L1-L5
-//https://github.com/auth0/node-jwks-rsa/blob/master/src/JwksClient.js
+// https://github.com/auth0/node-jwks-rsa/blob/master/src/JwksClient.js
 // https://github.com/sgmeyer/auth0-node-jwks-rs256/blob/master/src/lib/utils.js
 // https://auth0.com/blog/navigating-rs256-and-jwks/
 // https://github.com/auth0/node-jsonwebtoken
  // https://hub.udacity.com/rooms/community:nd9990:840125-project-617/community:thread-4601288877-1137793?contextType=room
- // http://zetcode.com/javascript/axios/
+// http://zetcode.com/javascript/axios/

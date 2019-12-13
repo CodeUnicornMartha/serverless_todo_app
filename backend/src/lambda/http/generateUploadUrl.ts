@@ -2,7 +2,7 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 import { createLogger } from '../../utils/logger'
 import { getuserId } from '../../BusinessLogic/userauthentication'
-import { ToDoExists, getUploadUrl, updateuploadurl } from '../../DataLayer/ToDoAccess'
+import { ToDoExists, getUploadUrl, updateuploadurl, uploadimage, seeImage} from '../../DataLayer/ToDoAccess'
 
 const logger = createLogger('generateuploadurl')
 
@@ -26,6 +26,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   logger.info("url", uploadUrl)
   const updatedurldb = updateuploadurl(todoId, userId, uploadUrl)
   logger.info("updatedurldb", updatedurldb)
+  const imageurl = await uploadimage(todoId, userId, event)
+  logger.info("image", imageurl)
+  const attachmentUrl = seeImage(todoId)
   return {
     statusCode: 201,
     headers: {
@@ -33,7 +36,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      uploadUrl: uploadUrl
+      uploadUrl: uploadUrl,
+      attachmentUrl: attachmentUrl,
+      imageurl: imageurl
+
     })
   }
 }

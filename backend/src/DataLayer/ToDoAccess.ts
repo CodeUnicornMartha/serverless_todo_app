@@ -30,7 +30,6 @@ export async function deletetodo(userId: string, todoId: string) {
     const ToDoTable = process.env.ToDo_TABLE
     const Key = {
         todoId: todoId,
-        //createdAt: createdAt,
         userId: userId
         }
     logger.info("Key", Key)
@@ -53,7 +52,6 @@ export async function gettodos(userId: string){
         KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
           ':userId': userId
-          //RangeKey: createdAt
         }
       }).promise()
       logger.info("result", resultgetdata)
@@ -68,7 +66,6 @@ export async function ToDoExists(todoId: string, userId: string) {
         TableName: ToDoTable,
         Key: {
           todoId: todoId,
-          //createdAt: createdAt,
           userId: userId
         }
       }).promise()
@@ -87,6 +84,19 @@ export async function ToDoExists(todoId: string, userId: string) {
       Expires: urlExpiration
     })
   }
+
+ export function seeImage(todoId: string) {
+    const s3 = new AWS.S3({ signatureVersion: 'v4'})
+    const bucketName = process.env.ToDo_S3_BUCKET
+    const urlExpiration = process.env.SIGNED_URL_EXPIRATION
+    return s3.getSignedUrl('getObject', {
+      Bucket: bucketName,
+      Key: todoId,
+      Expires: urlExpiration
+    })
+  }
+  
+  
 export async function updateuploadurl(todoId: string, userId: string, uploadUrl: string){
     const ToDoTable = process.env.ToDo_TABLE
     const docClient = new AWS.DynamoDB.DocumentClient()
@@ -106,6 +116,32 @@ export async function updateuploadurl(todoId: string, userId: string, uploadUrl:
     logger.info("resultuploadurldb", resultuploadurldb)
     return resultuploadurldb
 }
+
+
+export async function uploadimage(userId: string, todoId: string, event: any) {
+  const bucketName = process.env.ToDo_S3_BUCKET
+  const newImage = JSON.parse(event.body)
+  const docClient = new AWS.DynamoDB.DocumentClient()
+  const ToDoTable = process.env.ToDo_TABLE
+
+  const newItem = {
+    userId,
+    todoId,
+    ...newImage,
+    imageUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}.jpg`
+  }
+  logger.info("newItem", newItem)
+
+  await docClient
+    .put({
+      TableName: ToDoTable,
+      Item: newItem
+    })
+    .promise()
+
+  return newItem.imageUrl
+}
+
 export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string, userId: string){
   const ToDoTable = process.env.ToDo_TABLE
   const docClient = new AWS.DynamoDB.DocumentClient()
@@ -155,4 +191,5 @@ export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string
   // https://stackoverflow.com/questions/7067966/why-doesnt-adding-cors-headers-to-an-options-route-allow-browsers-to-access-my
   // https://hub.udacity.com/rooms/community:nd9990:840125-project-617?contextType=room
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
-  
+  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.03
+  // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/s3-example-presigned-urls.html

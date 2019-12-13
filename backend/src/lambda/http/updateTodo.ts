@@ -14,7 +14,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   const resultupdate = await updatetodo(updatedTodo, todoId, userId)
   
-  var statusCode = 201
+  let statusCode = 201
   if (!resultupdate) {
     logger.error("Unable to update ToDos")
     statusCode = 404

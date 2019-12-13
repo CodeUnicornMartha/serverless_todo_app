@@ -10,7 +10,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   logger.info('Processing event: ', event)
   const userId = getuserId(event)
   const resultget = await gettodos(userId)
-  var statusCode = 201
+  let statusCode = 201
   if (!resultget) {
     logger.error("Unable to get ToDos")
     statusCode = 404

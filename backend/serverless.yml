@@ -14,11 +14,12 @@ provider:
 
   environment:
     ToDo_TABLE: ToDo-martha2-${self:provider.stage}
-    ToDo_S3_BUCKET: udagram-martha-todo-v1-${self:provider.stage}
-    UserIdINDEX: UserIdINDEX
+    ToDo_S3_BUCKET: udagram-martha-todo-v2-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
+    UserIdINDEX: UserIdINDEX
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
+    
 
 
 functions:
@@ -243,6 +244,6 @@ resources:
             - Sid: PublicReadForGetBucketObjects
               Effect: Allow
               Principal: '*'
-              Action: 's3:GetObject'
+              Action: 's3:GetObject'             
               Resource: 'arn:aws:s3:::${self:provider.environment.ToDo_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
