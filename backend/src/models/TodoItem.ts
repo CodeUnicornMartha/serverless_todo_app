@@ -5,5 +5,5 @@ export interface TodoItem {
   name: string
   dueDate: string
   done: boolean
-  uploadUrl?: string
+  attachmentUrl?: string
 }

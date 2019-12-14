@@ -2,13 +2,15 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 import { createLogger } from '../../utils/logger'
 import { getuserId } from '../../BusinessLogic/userauthentication'
-import { ToDoExists, getUploadUrl, updateuploadurl, uploadimage, seeImage} from '../../DataLayer/ToDoAccess'
+import { ToDoExists, getUploadUrl, updateuploadurl} from '../../DataLayer/ToDoAccess'
 
 const logger = createLogger('generateuploadurl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
   const userId = getuserId(event)
+  
+  //const newImage = JSON.parse(event.body)
 
   // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
   const validToDoId = await ToDoExists(todoId, userId)
@@ -24,11 +26,13 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   }
   const uploadUrl = getUploadUrl(todoId)
   logger.info("url", uploadUrl)
-  const updatedurldb = updateuploadurl(todoId, userId, uploadUrl)
+  //const imageurl = await uploadimage(todoId)
+  //logger.info("image", imageurl)
+  
+  const updatedurldb = updateuploadurl(todoId, userId)
   logger.info("updatedurldb", updatedurldb)
-  const imageurl = await uploadimage(todoId, userId, event)
-  logger.info("image", imageurl)
-  const attachmentUrl = seeImage(todoId)
+  
+  //const attachmentUrl = seeImage(todoId)
   return {
     statusCode: 201,
     headers: {
@@ -36,10 +40,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      uploadUrl: uploadUrl,
-      attachmentUrl: attachmentUrl,
-      imageurl: imageurl
-
+      uploadUrl: uploadUrl
+      //attachmentUrl: image
     })
   }
 }

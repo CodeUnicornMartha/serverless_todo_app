@@ -2,11 +2,14 @@ import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { createLogger } from '../utils/logger'
 import * as AWS  from 'aws-sdk'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
+import * as AWSXRAY from 'aws-xray-sdk'
+import * as uuid from 'uuid'
 
 const logger = createLogger('DataLayer')
+const XAWS = AWSXRAY.captureAWS(AWS)
 
 export async function createtodo(userId: string, todo: CreateTodoRequest, todoId: string) {
-    const docClient = new AWS.DynamoDB.DocumentClient
+    const docClient = new XAWS.DynamoDB.DocumentClient
     const timestamp = (new Date()).toISOString()
     const ToDoTable = process.env.ToDo_TABLE
     const newTodoitem = {
@@ -26,7 +29,7 @@ export async function createtodo(userId: string, todo: CreateTodoRequest, todoId
 }
 
 export async function deletetodo(userId: string, todoId: string) {
-    const docClient = new AWS.DynamoDB.DocumentClient
+    const docClient = new XAWS.DynamoDB.DocumentClient
     const ToDoTable = process.env.ToDo_TABLE
     const Key = {
         todoId: todoId,
@@ -43,7 +46,7 @@ export async function deletetodo(userId: string, todoId: string) {
 }
 
 export async function gettodos(userId: string){
-    const docClient = new AWS.DynamoDB.DocumentClient
+    const docClient = new XAWS.DynamoDB.DocumentClient
     const ToDoTable = process.env.ToDo_TABLE
     const UserIdINDEX = process.env.UserIdINDEX
     const resultgetdata = await docClient.query({
@@ -61,7 +64,7 @@ export async function gettodos(userId: string){
 
 export async function ToDoExists(todoId: string, userId: string) {
     const ToDoTable = process.env.ToDo_TABLE
-    const docClient = new AWS.DynamoDB.DocumentClient()
+    const docClient = new XAWS.DynamoDB.DocumentClient()
     const result = await docClient.get({
         TableName: ToDoTable,
         Key: {
@@ -75,7 +78,7 @@ export async function ToDoExists(todoId: string, userId: string) {
   }
   
  export function getUploadUrl(todoId: string) {
-    const s3 = new AWS.S3({ signatureVersion: 'v4'})
+    const s3 = new XAWS.S3({ signatureVersion: 'v4'})
     const bucketName = process.env.ToDo_S3_BUCKET
     const urlExpiration = process.env.SIGNED_URL_EXPIRATION
     return s3.getSignedUrl('putObject', {
@@ -84,9 +87,9 @@ export async function ToDoExists(todoId: string, userId: string) {
       Expires: urlExpiration
     })
   }
-
+/*
  export function seeImage(todoId: string) {
-    const s3 = new AWS.S3({ signatureVersion: 'v4'})
+    const s3 = new XAWS.S3({ signatureVersion: 'v4'})
     const bucketName = process.env.ToDo_S3_BUCKET
     const urlExpiration = process.env.SIGNED_URL_EXPIRATION
     return s3.getSignedUrl('getObject', {
@@ -95,11 +98,14 @@ export async function ToDoExists(todoId: string, userId: string) {
       Expires: urlExpiration
     })
   }
+  */
   
-  
-export async function updateuploadurl(todoId: string, userId: string, uploadUrl: string){
+export async function updateuploadurl(todoId: string, userId: string){
     const ToDoTable = process.env.ToDo_TABLE
-    const docClient = new AWS.DynamoDB.DocumentClient()
+    const bucketName = process.env.ToDo_S3_BUCKET
+    const docClient = new XAWS.DynamoDB.DocumentClient()
+    const imageid = uuid.v4()
+    const imageUrl =  `https://${bucketName}.s3.amazonaws.com/${imageid}`
     const resultuploadurldb = await docClient.update({
         TableName: ToDoTable,
         Key: {
@@ -108,7 +114,7 @@ export async function updateuploadurl(todoId: string, userId: string, uploadUrl:
         },
         UpdateExpression: 'set uploadUrl = :uploadUrl',
         ExpressionAttributeValues: {
-        ':uploadUrl': uploadUrl
+        ':uploadUrl': imageUrl
       },
       ReturnValues: "UPDATED_NEW"
       })
@@ -117,19 +123,22 @@ export async function updateuploadurl(todoId: string, userId: string, uploadUrl:
     return resultuploadurldb
 }
 
-
-export async function uploadimage(userId: string, todoId: string, event: any) {
+/*
+export async function uploadimage(todoId: string) {
   const bucketName = process.env.ToDo_S3_BUCKET
-  const newImage = JSON.parse(event.body)
-  const docClient = new AWS.DynamoDB.DocumentClient()
+  //const timestamp = new Date().toISOString()
+  //const newImage = JSON.parse(event.body)
+  const docClient = new XAWS.DynamoDB.DocumentClient()
   const ToDoTable = process.env.ToDo_TABLE
+  const imageid = uuid.v4()
 
   const newItem = {
-    userId,
-    todoId,
-    ...newImage,
-    imageUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}.jpg`
-  }
+    //userId: userId,
+    todoId: todoId,
+    //timestamp,
+    //...newImage,
+    imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageid}`
+    }
   logger.info("newItem", newItem)
 
   await docClient
@@ -141,10 +150,10 @@ export async function uploadimage(userId: string, todoId: string, event: any) {
 
   return newItem.imageUrl
 }
-
+*/
 export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string, userId: string){
   const ToDoTable = process.env.ToDo_TABLE
-  const docClient = new AWS.DynamoDB.DocumentClient()
+  const docClient = new XAWS.DynamoDB.DocumentClient()
   const todoname = updatedTodo.name
   const done = updatedTodo.done
   const dueDate = updatedTodo.dueDate
@@ -171,6 +180,7 @@ export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string
   return resultupdatedata
   
 }
+
 
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06      

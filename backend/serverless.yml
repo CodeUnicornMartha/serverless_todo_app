@@ -4,10 +4,15 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  - serverless-plugin-tracing
 
 provider:
   name: aws
   runtime: nodejs8.10
+
+  tracing:
+    lambda: true
+    apiGateway: true
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
@@ -15,7 +20,7 @@ provider:
   environment:
     ToDo_TABLE: ToDo-martha2-${self:provider.stage}
     ToDo_S3_BUCKET: udagram-martha-todo-v2-${self:provider.stage}
-    SIGNED_URL_EXPIRATION: 300
+    SIGNED_URL_EXPIRATION: 86400
     UserIdINDEX: UserIdINDEX
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
@@ -53,7 +58,12 @@ functions:
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}/index/${self:provider.environment.UserIdINDEX}
-
+      - Effect: "Allow" # xray permissions (required)
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
   # TODO: Configure this function
   CreateTodo:
@@ -80,6 +90,12 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
+      - Effect: "Allow" # xray permissions (required)
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
   # TODO: Configure this function
   UpdateTodo:
@@ -107,6 +123,12 @@ functions:
           - dynamodb:PutItem
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
+      - Effect: "Allow" # xray permissions (required)
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
   # TODO: Configure this function
   DeleteTodo:
@@ -132,6 +154,12 @@ functions:
           - dynamodb:DeleteItem
           - dynamodb:Delete
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
+      - Effect: "Allow" # xray permissions (required)
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -164,6 +192,12 @@ functions:
           - dynamodb:GetItem
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ToDo_TABLE}
+      - Effect: "Allow" # xray permissions (required)
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
       
 
 
@@ -244,6 +278,8 @@ resources:
             - Sid: PublicReadForGetBucketObjects
               Effect: Allow
               Principal: '*'
-              Action: 's3:GetObject'             
+              Action: 
+                - s3:GetObject
+                - s3:PutObject        
               Resource: 'arn:aws:s3:::${self:provider.environment.ToDo_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
