@@ -104,7 +104,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   render() {
     return (
       <div>
-        <Header as="h1">Photos App</Header>
+        <Header as="h1">TODOs</Header>
 
         {this.renderCreateTodoInput()}
 
@@ -122,12 +122,12 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
               color: 'teal',
               labelPosition: 'left',
               icon: 'add',
-              content: 'New Photo',
+              content: 'New task',
               onClick: this.onTodoCreate
             }}
             fluid
             actionPosition="left"
-            placeholder="Describe your Photos which changed your world..."
+            placeholder="To change the world..."
             onChange={this.handleNameChange}
           />
         </Grid.Column>
@@ -150,7 +150,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     return (
       <Grid.Row>
         <Loader indeterminate active inline="centered">
-          Loading Photos
+          Loading TODOs
         </Loader>
       </Grid.Row>
     )
