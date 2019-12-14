@@ -1,0 +1,19 @@
+{
+  "name": "c4-final-project-starter-code",
+  "version": "1.0.0",
+  "description": "This is the implementation of a simple Photo application using AWS Lambda and Serverless framework.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeUnicornMartha/photoapp_serverless.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CodeUnicornMartha/photoapp_serverless/issues"
+  },
+  "homepage": "https://github.com/CodeUnicornMartha/photoapp_serverless#readme"
+}
