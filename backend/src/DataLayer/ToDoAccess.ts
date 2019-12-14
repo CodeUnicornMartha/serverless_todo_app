@@ -87,19 +87,7 @@ export async function ToDoExists(todoId: string, userId: string) {
       Expires: urlExpiration
     })
   }
-/*
- export function seeImage(todoId: string) {
-    const s3 = new XAWS.S3({ signatureVersion: 'v4'})
-    const bucketName = process.env.ToDo_S3_BUCKET
-    const urlExpiration = process.env.SIGNED_URL_EXPIRATION
-    return s3.getSignedUrl('getObject', {
-      Bucket: bucketName,
-      Key: todoId,
-      Expires: urlExpiration
-    })
-  }
-  */
-  
+
 export async function updateuploadurl(todoId: string, userId: string){
     const ToDoTable = process.env.ToDo_TABLE
     const bucketName = process.env.ToDo_S3_BUCKET
@@ -123,34 +111,6 @@ export async function updateuploadurl(todoId: string, userId: string){
     return resultuploadurldb
 }
 
-/*
-export async function uploadimage(todoId: string) {
-  const bucketName = process.env.ToDo_S3_BUCKET
-  //const timestamp = new Date().toISOString()
-  //const newImage = JSON.parse(event.body)
-  const docClient = new XAWS.DynamoDB.DocumentClient()
-  const ToDoTable = process.env.ToDo_TABLE
-  const imageid = uuid.v4()
-
-  const newItem = {
-    //userId: userId,
-    todoId: todoId,
-    //timestamp,
-    //...newImage,
-    imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageid}`
-    }
-  logger.info("newItem", newItem)
-
-  await docClient
-    .put({
-      TableName: ToDoTable,
-      Item: newItem
-    })
-    .promise()
-
-  return newItem.imageUrl
-}
-*/
 export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string, userId: string){
   const ToDoTable = process.env.ToDo_TABLE
   const docClient = new XAWS.DynamoDB.DocumentClient()
@@ -203,3 +163,6 @@ export async function updatetodo( updatedTodo: UpdateTodoRequest, todoId: string
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
   // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.03
   // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/s3-example-presigned-urls.html
+  // https://serverless.com/plugins/serverless-plugin-tracing/
+  // https://github.com/alex-murashkin/serverless-plugin-tracing
+  // https://medium.com/@glicht/using-aws-x-ray-to-achieve-least-privilege-permissions-93dfd6701318

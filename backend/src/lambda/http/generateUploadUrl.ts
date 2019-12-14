@@ -10,8 +10,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoId = event.pathParameters.todoId
   const userId = getuserId(event)
   
-  //const newImage = JSON.parse(event.body)
-
   // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
   const validToDoId = await ToDoExists(todoId, userId)
   logger.info("validtodoid", validToDoId)
@@ -26,13 +24,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   }
   const uploadUrl = getUploadUrl(todoId)
   logger.info("url", uploadUrl)
-  //const imageurl = await uploadimage(todoId)
-  //logger.info("image", imageurl)
-  
+ 
   const updatedurldb = updateuploadurl(todoId, userId)
   logger.info("updatedurldb", updatedurldb)
-  
-  //const attachmentUrl = seeImage(todoId)
+
   return {
     statusCode: 201,
     headers: {
@@ -41,7 +36,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     },
     body: JSON.stringify({
       uploadUrl: uploadUrl
-      //attachmentUrl: image
     })
   }
 }
